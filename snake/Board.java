@@ -3,78 +3,87 @@ package snake;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
 import java.awt.event.KeyEvent;
 
 public class Board{
-    public static final int WIDTH = 500;            //window size = width + 6, height + 30
+    public static final int WIDTH = 500;
     public static final int HEIGHT = 500;
-    private static final int REFRESH = 50;          //millis per loop
-    private static double[] direction;
-    private static double[] tempDirection;          //prevents backtracking
-    private static double gameTime;                 //tracks millis since start of game
+    private static final int SLEEPTIME = 100;
+    private static Point direction;
+    private static ArrayList<Point> directionQueue;
     private static boolean gameOver;
     
     public static void main(String[] args){
         JFrame frame = new JFrame();
-        initialize(frame);   //initialize frame
         MyListener listener = new MyListener();
         frame.addKeyListener(listener);
+        Snake snake = new Snake();
+        frame.add(snake);
+        initialize(frame);
         
         while(true){
-            Snake snake = new Snake(new Color((float)Math.random(), (float)Math.random(), (float)Math.random()));
-            frame.add(snake);
-            frame.setVisible(true);
-            tempDirection = new double[]{1, 0};    //snake starts by going right
+            snake.reset(new Color((float) Math.random(), (float) Math.random(), (float) Math.random()));
             gameOver = false;
-            gameTime = System.currentTimeMillis();
+            direction = new Point(1, 0);    //snake starts off to the right
+            directionQueue = new ArrayList<Point>();
+            directionQueue.add(new Point(direction));
             
             while(!gameOver){
-                if(System.currentTimeMillis()>gameTime){
-                    direction = tempDirection;
-                    gameOver = snake.update(direction);            
-                    snake.repaint();
-                    gameTime += REFRESH;
-                    //snake.printBody(true);
+                try {
+                    Thread.sleep(SLEEPTIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
+                
+                gameOver = directionQueue.size() > 0 ? snake.update(directionQueue.remove(0)) : snake.update(direction);
+                snake.repaint();
+                //snake.printBody(true);
             }
             
-            System.out.println(snake.printBody(false));
+            System.out.println(snake.printBody(false)); //print score
         }
     }
 
     public static void initialize(JFrame frame){
-        frame.setTitle("Snake Game");
-        frame.setSize(WIDTH + 6, HEIGHT + 30);
+        frame.setTitle("Snake");
+        frame.getContentPane().setPreferredSize(new Dimension(WIDTH, HEIGHT));
         frame.setLocationRelativeTo(null);
         frame.setResizable(false);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+        frame.pack();
     }
 
     public static class MyListener implements KeyListener{
         public void keyPressed(KeyEvent e){
             switch(e.getKeyCode()) {
                 case 37:    //left
-                    if(direction[0] != 1)
-                        tempDirection = new double[]{-1, 0};
+                    if(direction.x != 1)
+                        direction.setLocation(-1, 0);
                     break;
                 case 38:    //up
-                    if(direction[1] != 1)   
-                        tempDirection = new double[]{0, -1};
+                    if(direction.y != 1)
+                        direction.setLocation(0, -1);
                     break;
                 case 39:    //right
-                    if(direction[0] != -1)
-                        tempDirection = new double[]{1, 0};
+                    if(direction.x != -1)
+                        direction.setLocation(1, 0);
                     break;
                 case 40:    //down
-                    if(direction[1] != -1)
-                        tempDirection = new double[]{0, 1};
+                    if(direction.y != -1)
+                        direction.setLocation(0, 1);
                     break;
                 case 27:    //escape key
                     System.exit(0);
                     break;
             }
+            
+            directionQueue.add(new Point(direction));
         }
+
         public void keyReleased(KeyEvent e){}
+
         public void keyTyped(KeyEvent e){}
     }
 }
