@@ -22,7 +22,7 @@ public class Snake extends JPanel{
     }
 
     public void paintComponent(Graphics g){
-        Graphics2D gg = (Graphics2D) g; //cast to 2D graphics to handle doubles
+        Graphics2D gg = (Graphics2D) g;
 
         //Enable anti-aliasing and pure stroke
         gg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
